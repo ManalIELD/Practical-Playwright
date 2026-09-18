@@ -27,7 +27,7 @@ export class CheckoutPurchasePage extends BasePage {
                         .locator(".field.small")
                         .filter({ hasText: "Expiry Date" })
                         .getByRole("combobox")
-                        .nth(0);
+                        .nth(1);
       this.cvvLocator = page
                         .locator(".field")
                         .filter({ hasText: "CVV Code" })
@@ -36,23 +36,32 @@ export class CheckoutPurchasePage extends BasePage {
                         .locator(".field")
                         .filter({ hasText: "Name on Card" })
                         .getByRole("textbox");
-      this.placeOrderButtonLocator = page.getByRole("button", { name: "Place Order" });
+      this.placeOrderButtonLocator = page.getByText("Place Order");
      
     }
     override async open(): Promise<void>{
       await super.open();
-     await this.page.goto("https://rahulshettyacademy.com/client/#/dashboard/cart");
+    // await this.page.goto("https://rahulshettyacademy.com/client/#/dashboard/cart");
     }
 
 async CheckoutPurchasePageActions(): Promise<void>{
       
       await this.checkoutButtonLocator.click();
+
+     await expect(this.cardlocator).toBeVisible();
+
       await this.cardlocator.fill(TestData.creditCardNumber);
       await this.expiryDayLocator.selectOption(TestData.creditcardexoiryday);
       await this.expiryMonthLocator.selectOption(TestData.creditcardexoirymonth);
       await this.cvvLocator.fill(TestData.cvv);
       await this.nameLocator.fill(TestData.creditCardName);
-     await this.placeOrderButtonLocator.click();   
+      const urlBeforeSubmit = this.page.url();
+      await this.placeOrderButtonLocator.click();
+      await this.page.waitForTimeout(1000);
+
+      await expect(this.page).toHaveURL(urlBeforeSubmit);
+
+      //await this.placeOrderButtonLocator.click();   
   
 }
 }

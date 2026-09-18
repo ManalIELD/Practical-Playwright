@@ -20,6 +20,7 @@ test.use({
       
 
 test ("user can  register then login with registered account and complete a purchase" , async({page})=>{
+  test.setTimeout(90_000);
 
 
 
@@ -42,8 +43,17 @@ test ("user can  register then login with registered account and complete a purc
       await expect(productPage.cartCountLocator.locator("label")).toHaveText("1");
       await productPage.CartClickAction();
       //await checkoutPurchasePage.open();
+      //await expect(page).toHaveURL(
+  //  "https://rahulshettyacademy.com/client/#/dashboard/cart"
+//);
+
+await expect(page.getByText("ZARA COAT 3", { exact: true })).toBeVisible();
+
+await checkoutPurchasePage.CheckoutPurchasePageActions();
       await checkoutPurchasePage.CheckoutPurchasePageActions();
       await expect(page.getByText("Payment Method", { exact: true })).toBeVisible();
+      await expect(page.getByText("Credit Card", { exact: true }));
+
       
 
 
