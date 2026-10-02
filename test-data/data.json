@@ -1,0 +1,26 @@
+{
+  "firstName": "test",
+  "lastName": "testUser333",
+  "email": "emailtest333@gmail.com",
+  "loginemail": "emailtest333@gmail.com",
+  "phoneNumber": "1234567890",
+  "occupation": "Student",
+  "gender": "Female",
+  "password": "Test1234@",
+  "confirmPassword": "Test1234@",
+  "creditCardNumber": "4111111111111111",
+  "creditCardName": "testUser3",
+  "creditcardexoiryday": "01",
+  "creditcardexoirymonth": "12",
+  "country": "Egypt",
+  "CountryPrefix": "EGY",
+  "cvv": "123",
+  "products": ["ADIDAS OREGINAL", "ZARA COAT 3"],
+  "invalidProducts": ["NOT A REAL PRODUCT"],
+  "loginDataScenarios": [
+    { "username": "emailtest33@gmail.com", "password": "Test1234@", "validity": "valid" },
+    { "username": "emailtest33@gmail.com", "password": "wrong-password", "validity": "invalid-wrong password" },
+    { "username": "not-a-user@mail.com", "password": "Test1234@", "validity": "invalid- wrong email" },
+    { "username": " ", "password": " ", "validity": "invalid-white space data" }
+  ]
+}
