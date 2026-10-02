@@ -21,11 +21,12 @@ for (const { username, password, validity } of loginData) {
     await loginPage.open();
     await loginPage.LoginPageActions(username, password);
 
-    if (validity === "valid") {
+    if (String(validity).toLowerCase() === "valid") {
       await expect(page).toHaveURL(/dashboard/i);
     } else {
       await expect(page).not.toHaveURL(/dashboard/i);
       await expect(page.getByRole("button", { name: /login/i })).toBeVisible();
+      await expect(page.getByText("Incorrect email or password"));
     }
   });
 }
