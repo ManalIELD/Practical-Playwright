@@ -58,6 +58,7 @@ const secondProduct: string = testData.products[2];
 
 
 
+
   // Login using API token
   await page.addInitScript((authToken) => {
     localStorage.setItem("token", authToken);

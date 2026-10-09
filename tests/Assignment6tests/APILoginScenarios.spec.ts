@@ -37,7 +37,7 @@ for (const { username, password, validity } of loginData) {
       await page.goto("https://rahulshettyacademy.com/client/");
       await expect(page).toHaveURL(/client/i);
     } else {
-      await auth.expectLoginRejected({ userEmail: username, userPassword: password });
+      await auth.expectLoginRejected({ userEmail: username, userPassword: password }); // whitespaces test data will not call any api so same wrong creds messege will appear 
     }
   });
 }

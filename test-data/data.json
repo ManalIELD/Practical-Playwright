@@ -22,5 +22,8 @@
     { "username": "emailtest33@gmail.com", "password": "wrong-password", "validity": "invalid-wrong password" },
     { "username": "not-a-user@mail.com", "password": "Test1234@", "validity": "invalid- wrong email" },
     { "username": " ", "password": " ", "validity": "invalid-white space data" }
+  ],
+  "registerDataScenarios": [
+    { "firstName": "RegisterTest3", "lastName": "Test3", "userEmail": "RegisterTest3@gmail.com", "userRole": "User", "occupation": "Student", "gender": "Male", "userMobile": "1234567890", "userPassword": "Test1234@", "confirmPassword": "Test1234@", "required": true }
   ]
 }

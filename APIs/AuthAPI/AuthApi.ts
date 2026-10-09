@@ -16,15 +16,16 @@ export class AuthApi {
 
     return new AuthApi(apiContext);
   }   
+  
 
   async login({ userEmail, userPassword }: loginCredentials): Promise<string> {
     const loginResponse = await this.apiContext.post("/api/ecom/auth/login", {
       data: { userEmail, userPassword },
     });
-
     expect(loginResponse.ok(), `Login Failed for ${userEmail}`).toBeTruthy();
 
     const loginResponseJson = await loginResponse.json();
+
     expect(
       loginResponseJson.token,
       "Login response missing token"
@@ -43,12 +44,17 @@ export class AuthApi {
   const loginResponse = await this.apiContext.post(
     "/api/ecom/auth/login",
     {
-      data: {
-        userEmail,
-        userPassword,
-      },
+      data: { userEmail, userPassword },
     }
   );
+
+  const loginResponseJson = await loginResponse.json();
+
+
+  expect(
+    loginResponseJson.message,
+    `Expected login to be rejected for ${userEmail}`
+  ).toBe("Incorrect email or password.");
 
   expect(loginResponse.ok()).toBeFalsy();
 }
