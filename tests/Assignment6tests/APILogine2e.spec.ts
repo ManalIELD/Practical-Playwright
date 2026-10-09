@@ -2,7 +2,6 @@
 
 import { test, expect } from "@playwright/test";
 import { AuthApi } from "../../APIs/AuthAPI/AuthApi";
-import { ProductPage } from "../../Pages/ProductPage";
 import { CheckoutPurchasePage } from "../../Pages/CheckoutPurchasePage";
 import { OrdersPage } from "../../Pages/Client/OrdersPage";
 import { DashboardPage } from "../../Pages/Client/DashboardPage";
