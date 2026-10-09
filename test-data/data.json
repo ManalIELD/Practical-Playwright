@@ -15,7 +15,7 @@
   "country": "Egypt",
   "CountryPrefix": "EGY",
   "cvv": "123",
-  "products": ["ADIDAS OREGINAL", "ZARA COAT 3"],
+  "products": ["ADIDAS OREGINAL", "ZARA COAT 3", "iphone 13 pro"],
   "invalidProducts": ["NOT A REAL PRODUCT"],
   "loginDataScenarios": [
     { "username": "emailtest33@gmail.com", "password": "Test1234@", "validity": "valid" },

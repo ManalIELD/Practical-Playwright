@@ -1,4 +1,4 @@
-import { type Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 import { BasePage } from "./BasePage";
 
 export class CheckoutPurchasePage extends BasePage {
@@ -61,6 +61,15 @@ export class CheckoutPurchasePage extends BasePage {
     return this.page.getByText("Place Order");
   }
 
+  // after checkout purchase (orders locators)
+  getOrderIdLocator() {
+    return this.page.locator("td.em-spacer-1 label").filter({ hasText: "|" });
+  }
+ 
+  getOrdersHistoryLinkLocator() {
+    return this.page.locator('label[routerlink="/dashboard/myorders"]');
+  }
+
   // actions
   override async open(): Promise<void> {
     await super.open();
@@ -90,7 +99,7 @@ export class CheckoutPurchasePage extends BasePage {
     await this.getNameOnCardLocator().fill(name);
   }
 
-  // Types slowly so the auto-suggest list appears
+  // Types slowly letter by letter so the auto-suggest list appears
   async typeCountryPrefix(prefix: string): Promise<void> {
     await this.getCountryLocator().pressSequentially(prefix, { delay: 100 });
   }
@@ -108,4 +117,47 @@ export class CheckoutPurchasePage extends BasePage {
   async clickPlaceOrder(): Promise<void> {
     await this.getPlaceOrderButtonLocator().click();
   }
+
+  
+  // order actions
+  async clickOrdersHistory(): Promise<void> {
+    await this.getOrdersHistoryLinkLocator().click();
+  }
+  // i used nth as used in months , days to get the index of orders 
+  async getOrderIdText(index: number = 0): Promise<string> {
+  return (await this.getOrderIdLocator().nth(index).innerText())
+    .replace(/\|/g, "")
+    .trim();
+}
+
+  //assertions
+  //assert checkout page is visible
+  async expectCheckoutPageVisible(): Promise<void> {
+    await expect(
+    this.getCardNumberLocator()
+  ).toBeVisible();
+  } 
+  
+  // assert orders after checkout 
+
+  async expectOrderIdVisible(index: number): Promise<void> {
+    await expect(
+      this.getOrderIdLocator().filter({ hasText: await this.getOrderIdText(index) }),
+      "Expected order ID to be visible after checkout"
+    ).toBeVisible();
+  } 
+
+  // Verify order confirmation page
+  async expectOrderConfirmationPageVisible(): Promise<void> {
+      await expect(this.page).toHaveURL(/dashboard\/thanks/i);
+  }
+
+async expectThankYouHeadingVisible(): Promise<void> {
+  
+  await expect(
+    this.page.getByRole("heading", {
+      name: "Thankyou for the order.",
+    })
+  ).toHaveText("Thankyou for the order.");
+}
 }
