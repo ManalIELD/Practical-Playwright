@@ -2,13 +2,21 @@
   "name": "playwrightassignment1",
   "version": "1.0.0",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "playwright test",
+    "test:a7": "playwright test tests/Assignment7Tests",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:positive": "playwright test --grep @positive",
+    "test:negative": "playwright test --grep @negative",
+    "test:regression": "playwright test --grep @regression",
+    "report": "playwright show-report reports"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
     "@playwright/test": "^1.63.0",
-    "@types/node": "^22.20.2"
+    "@types/node": "^22.20.5"
   }
 }
