@@ -186,10 +186,10 @@ test.describe("Positive flow", { tag: "@regression" }, () => {
     await expect(page).toHaveURL(/dashboard/i);
     await shot(page, "e2e-home");
 
-    await dashboardPage.addProductToCart(productName);
+    await dashboardPage.addProductToCart(validProducts[1]);
     await shot(page, "e2e-added");
     await cartPage.Open();
-    await cartPage.expectedAddedProduct(productName);
+    await cartPage.expectedAddedProduct(validProducts[1]);
     await shot(page, "e2e-cart");
 
     await checkoutPage.clickCheckoutButton();

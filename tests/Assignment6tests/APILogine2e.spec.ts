@@ -8,6 +8,7 @@ import { DashboardPage } from "../../Pages/Client/DashboardPage";
 import fs from "fs";
 import path from "path";
 import { CartPage } from "../../Pages/Client/CartPage";
+import { AuthTokenHelper } from "../../Utils/TokensHelpers/AuthTokenHelper";
 
 const jsonPath = path.join(path.resolve(), "test-data", "data.json");
 const testData = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
@@ -39,8 +40,9 @@ test.beforeAll(async () => {
     token = await auth.login({
       userEmail: validAccount.username,
       userPassword: validAccount.password,
+      
     });
-  } finally {
+} finally {
     await auth.dispose();
   }
 });
@@ -60,9 +62,10 @@ const secondProduct: string = testData.products[2];
 
 
   // Login using API token
-  await page.addInitScript((authToken) => {
-    localStorage.setItem("token", authToken);
-  }, token);
+  //await page.addInitScript((authToken) => {
+  //  localStorage.setItem("token", authToken);
+ // }, token);
+
 
   // Open dashboard
   await productPage.open();
