@@ -28,7 +28,14 @@ export class DashboardPage extends BasePage {
   }
 
   async addProductToCart(productName: string): Promise<void> {
+    await this.expectProductVisible(productName);
     await this.getAddToCartLocator(productName).click();
+  }
+
+  // invalid product: no card / no add button for that name
+  async expectCannotAddProduct(productName: string): Promise<void> {
+    await expect(this.getProductCardLocator(productName)).toHaveCount(0);
+    await expect(this.getAddToCartLocator(productName)).toHaveCount(0);
   }
 
   async openCart(): Promise<void> {
@@ -41,6 +48,13 @@ async expectProductVisible(productName: string): Promise<void> {
       this.getProductCardLocator(productName),
       `Expected product "${productName}" to be visible on the dashboard`
     ).toBeVisible();
+  }
+
+  async expectProductNotVisible(productName: string): Promise<void> {
+    await expect(
+      this.getProductCardLocator(productName),
+      `Expected product "${productName}" not to be visible on the dashboard`
+    ).toHaveCount(0);
   }
 
   async expectCartCount(expectedCount: number): Promise<void> {

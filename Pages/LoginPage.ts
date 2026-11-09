@@ -1,4 +1,4 @@
-import {test, expect, type Page, type Locator} from "@playwright/test";   
+import { expect, type Page, type Locator} from "@playwright/test";   
 import {BasePage} from "./BasePage";
 
 
@@ -21,6 +21,12 @@ async  LoginPageActions(email: string, password: string): Promise<void>{
             await this.emailLocator.fill(email);
             await this.passwordLocator.fill(password);
             await this.loginButtonLocator.click();
+      }
+
+
+      async expectInvalidLogin(): Promise<void>{
+            await expect(this.page.getByText("Incorrect email or password")).toBeVisible();
+            await expect(this.loginButtonLocator).toBeVisible();
       }
 
 }
