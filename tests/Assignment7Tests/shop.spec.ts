@@ -1,5 +1,5 @@
 import { env } from "process";
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { CartPage } from "../../Pages/Client/CartPage";
 import { CheckoutPurchasePage } from "../../Pages/CheckoutPurchasePage";
 import { DashboardPage } from "../../Pages/Client/DashboardPage";
@@ -11,68 +11,64 @@ const email = env.EMAIL ?? "";
 const password = env.PASSWORD ?? "";
 
 const productName = "ZARA COAT 3";
-//const products = ["ZARA COAT 3", "ADIDAS ORIGINAL", "IPHONE 13 PRO"];
 const jsonPath = path.join(path.resolve(), "test-data", "data.json");
 const data = JSON.parse(readFileSync(jsonPath, "utf-8"));
 const validProducts = data.products;
 const invalidProducts = data.invalidProducts;
 
+// screenshot each step -> shows in HTML report (works with page fixture + trace: on)
+async function shot(page: Page, name: string): Promise<void> {
+  const body = await page.screenshot({
+    path: `reports/screenshots/${name}.png`,
+    fullPage: true,
+  });
+  await test.info().attach(name, { body, contentType: "image/png" });
+}
 
-async function loginOnNewPage(browser: import("@playwright/test").Browser) {
+async function login(page: Page): Promise<void> {
   if (!email || !password) {
     throw new Error("Set EMAIL and PASSWORD inside the .env file");
   }
-  // browser fixture -> new page (no logout needed)
-  const page = await browser.newPage();
   const loginPage = new LoginPage(page);
   await loginPage.open();
+  await shot(page, "step-open-login");
   await loginPage.LoginPageActions(email, password);
-  return page;
+  await shot(page, "step-after-login");
 }
 
 // ---------- positive + smoke ----------
+// { page } fixture = new page each test (no logout) + config trace/screenshot apply
 test.describe("Login", { tag: ["@positive", "@smoke"] }, () => {
-  test("valid login", async ({ browser }) => {
-    const page = await loginOnNewPage(browser);
-
+  test("valid login", async ({ page }) => {
+    await login(page);
     await expect(page).toHaveURL(/dashboard/i);
-
-    const validShot = await page.screenshot({
-      path: "reports/screenshots/login-valid.png",
-      fullPage: true,
-    });
-    await test.info().attach("login-valid", {
-      body: validShot,
-      contentType: "image/png",
-    });
-
-    await page.close();
+    await shot(page, "login-valid");
   });
 });
 
 test.describe("Dashboard", { tag: ["@positive", "@smoke"] }, () => {
   test.describe.configure({ mode: "parallel" });
 
-  test("List ZARA COAT 3", async ({ browser }) => {
-    const page = await loginOnNewPage(browser);
-    const dashboard = new DashboardPage(page);
-
-    await dashboard.expectProductVisible(validProducts[1]);
-    await page.close();
+  test.beforeEach(async ({ page }) => {
+    await login(page);
   });
 
-  test("List ADIDAS ORIGINAL", async ({ browser }) => {
-    const page = await loginOnNewPage(browser);
+  test("List ZARA COAT 3", async ({ page }) => {
+    const dashboard = new DashboardPage(page);
+    await dashboard.expectProductVisible(validProducts[1]);
+    await shot(page, "dashboard-zara");
+  });
+
+  test("List ADIDAS ORIGINAL", async ({ page }) => {
     const dashboard = new DashboardPage(page);
     await dashboard.expectProductVisible(validProducts[0]);
-    await page.close();
+    await shot(page, "dashboard-adidas");
   });
 
-  test("List IPHONE 13 PRO", async ({ browser }) => {
-    const page = await loginOnNewPage(browser);
+  test("List IPHONE 13 PRO", async ({ page }) => {
     const dashboard = new DashboardPage(page);
     await dashboard.expectProductVisible(validProducts[2]);
-    await page.close();
+    await shot(page, "dashboard-iphone");
   });
 });
 
@@ -80,50 +76,42 @@ test.describe("Dashboard", { tag: ["@positive", "@smoke"] }, () => {
 test.describe("Invalid scenarios", { tag: "@negative" }, () => {
   test.describe.configure({ mode: "parallel" });
 
-  test("invalid login wrong password", async ({ browser }) => {
-    const page = await browser.newPage();
+  test("invalid login wrong password", async ({ page }) => {
     const loginPage = new LoginPage(page);
 
     await loginPage.open();
+    await shot(page, "invalid-login-open");
     await loginPage.LoginPageActions(email || "user@mail.com", "wrong-password");
     await loginPage.expectInvalidLogin();
-
-    const invalidShot = await page.screenshot({
-      path: "reports/screenshots/login-invalid.png",
-      fullPage: true,
-    });
-    await test.info().attach("login-invalid", {
-      body: invalidShot,
-      contentType: "image/png",
-    });
-
-    await page.close();
+    await shot(page, "login-invalid-password");
   });
 
-  test("invalid login wrong email", async ({ browser }) => {
-    const page = await browser.newPage();
+  test("invalid login wrong email", async ({ page }) => {
     const loginPage = new LoginPage(page);
 
     await loginPage.open();
+    await shot(page, "invalid-email-open");
     await loginPage.LoginPageActions("not-a-user@mail.com", password || "Test1234@");
     await loginPage.expectInvalidLogin();
-    await page.close();
+    await shot(page, "login-invalid-email");
   });
 
-  test("invalid product add - product not exist", async ({ browser }) => {
-    const page = await loginOnNewPage(browser);
+  test("invalid product add - product not exist", async ({ page }) => {
     const dashboard = new DashboardPage(page);
 
+    await login(page);
+    await shot(page, "invalid-product-not-exist-dashboard");
     await dashboard.expectCannotAddProduct(invalidProducts[0]);
-    await page.close();
+    await shot(page, "invalid-product-not-exist");
   });
 
-  test("invalid product add - wrong spelling", async ({ browser }) => {
-    const page = await loginOnNewPage(browser);
+  test("invalid product add - wrong spelling", async ({ page }) => {
     const dashboard = new DashboardPage(page);
 
+    await login(page);
+    await shot(page, "invalid-product-spelling-dashboard");
     await dashboard.expectCannotAddProduct(invalidProducts[1]);
-    await page.close();
+    await shot(page, "invalid-product-wrong-spelling");
   });
 });
 
@@ -131,7 +119,10 @@ test.describe("Invalid scenarios", { tag: "@negative" }, () => {
 test.describe("Positive flow", { tag: "@regression" }, () => {
   test.describe.configure({ mode: "serial" });
 
-  // cleanup cart on a fresh page from browser fixture
+  test.beforeEach(async ({ page }) => {
+    await login(page);
+  });
+
   test.afterAll(async ({ browser }) => {
     if (!email || !password) return;
 
@@ -145,23 +136,25 @@ test.describe("Positive flow", { tag: "@regression" }, () => {
     await page.close();
   });
 
-  // get products in cart by row locators -> remove any -> check leftover
-  test("cart get products then removedProduct", async ({ browser }) => {
-    const page = await loginOnNewPage(browser);
+  test("cart get products then removedProduct", async ({ page }) => {
     const dashboardPage = new DashboardPage(page);
     const cartPage = new CartPage(page);
 
     await cartPage.clearCart();
+    await shot(page, "cart-cleared");
     await page.getByRole("button", { name: "HOME" }).click();
     await expect(page).toHaveURL(/dashboard/i);
+    await shot(page, "cart-back-home");
 
     for (let i = 0; i < validProducts.length; i++) {
       await dashboardPage.addProductToCart(validProducts[i]);
       await dashboardPage.expectCartCount(i + 1);
+      await shot(page, `cart-added-${i + 1}`);
     }
 
     await cartPage.Open();
     await expect(cartPage.getCartRowsLocator()).toHaveCount(validProducts.length);
+    await shot(page, "cart-all-products");
 
     const productsInCart = await cartPage.getProductsInCart();
     expect(productsInCart.length).toBe(validProducts.length);
@@ -170,6 +163,7 @@ test.describe("Positive flow", { tag: "@regression" }, () => {
     const expectedLeft = productsInCart.length - productsToRemove.length;
 
     await cartPage.removedProducts(productsToRemove);
+    await shot(page, "cart-after-remove");
     await cartPage.expectCartItemsCount(expectedLeft);
 
     const leftInCart = await cartPage.getProductsInCart();
@@ -177,14 +171,12 @@ test.describe("Positive flow", { tag: "@regression" }, () => {
     for (const removed of productsToRemove) {
       expect(leftInCart.map((p) => p.toLowerCase())).not.toContain(removed.toLowerCase());
     }
-
-    await page.close();
+    await shot(page, "cart-final");
   });
 
-  test("login to checkout", async ({ browser }) => {
+  test("login to checkout", async ({ page }) => {
     test.setTimeout(90_000);
 
-    const page = await loginOnNewPage(browser);
     const dashboardPage = new DashboardPage(page);
     const cartPage = new CartPage(page);
     const checkoutPage = new CheckoutPurchasePage(page);
@@ -192,23 +184,28 @@ test.describe("Positive flow", { tag: "@regression" }, () => {
     await cartPage.clearCart();
     await page.getByRole("button", { name: "HOME" }).click();
     await expect(page).toHaveURL(/dashboard/i);
+    await shot(page, "e2e-home");
 
     await dashboardPage.addProductToCart(productName);
+    await shot(page, "e2e-added");
     await cartPage.Open();
     await cartPage.expectedAddedProduct(productName);
+    await shot(page, "e2e-cart");
 
     await checkoutPage.clickCheckoutButton();
     await checkoutPage.expectCheckoutPageVisible();
+    await shot(page, "e2e-checkout");
     await checkoutPage.fillCardNumber(data.creditCardNumber);
     await checkoutPage.selectExpiryDay(data.creditcardexoiryday);
     await checkoutPage.selectExpiryMonth(data.creditcardexoirymonth);
     await checkoutPage.fillCvv(data.cvv);
     await checkoutPage.fillNameOnCard(data.creditCardName);
     await checkoutPage.selectCountry(data.CountryPrefix, data.country);
+    await shot(page, "e2e-payment-filled");
     await checkoutPage.clickPlaceOrder();
 
     await checkoutPage.expectOrderConfirmationPageVisible();
     await checkoutPage.expectThankYouHeadingVisible();
-    await page.close();
+    await shot(page, "e2e-thankyou");
   });
 });
